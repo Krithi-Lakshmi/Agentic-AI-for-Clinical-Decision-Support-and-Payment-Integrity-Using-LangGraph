@@ -1,8 +1,8 @@
-from typing import TypedDict, List
+from typing import TypedDict
 
 class ClaimState(TypedDict):
     claim: str
-    retrieved_policy: str
-    risk_score: str
-    fraud_flag: str
+    policy_context: str
+    risk_score: float
     decision: str
+    explanation: str
