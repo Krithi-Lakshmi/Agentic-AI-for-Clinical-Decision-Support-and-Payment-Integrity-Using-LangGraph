@@ -1,16 +1,21 @@
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.embeddings import OpenAIEmbeddings
 
-POLICIES = """
-- Pre-authorization required for surgeries above $10,000
-- Knee surgery requires documentation of failed physical therapy
-- MRI requires physician referral
-- Emergency claims bypass pre-authorization
-"""
+POLICIES = [
+    "Pre-authorization required for surgeries above $10,000",
+    "Knee surgery requires failed physical therapy documentation",
+    "Emergency claims bypass pre-authorization",
+    "MRI requires physician referral"
+]
+
+def build_vectorstore():
+    embeddings = OpenAIEmbeddings()
+    return FAISS.from_texts(POLICIES, embeddings)
+
+
+vectorstore = build_vectorstore()
 
 def retrieve_policy(query: str):
-    # simple RAG simulation (you can replace with ChromaDB later)
-    if "knee" in query.lower():
-        return "Knee surgery requires documentation of failed physical therapy + pre-auth required"
-    if "surgery" in query.lower():
-        return "Pre-authorization required for surgeries above $10,000"
-    return "General policy: claims must be medically necessary and pre-approved"
+    docs = vectorstore.similarity_search(query, k=2)
+    return " | ".join([d.page_content for d in docs])
